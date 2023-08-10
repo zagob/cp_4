@@ -1,0 +1,35 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model InfoPoint {
+  id           String @id @default(cuid())
+  start1       Int
+  exit1        Int
+  start2       Int
+  exit2        Int
+  totalMinutes Int
+
+  // User User[]
+}
+
+model Point {
+  id        String   @id @default(cuid())
+  time1     Int
+  time2     Int
+  time3     Int
+  time4     Int
+  createdAt DateTime
+  updatedAt DateTime @updatedAt
+
+  // user   User   @relation(fields: [userId], references: [id])
+  // userId String
+}
