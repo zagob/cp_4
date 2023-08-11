@@ -11,7 +11,7 @@ export function timeToMinutes(time: string) {
 }
 
 export function minutesToTime(minutes: number) {
-  const hours = Math.round(minutes / 60)
+  const hours = Math.floor(minutes / 60)
     .toString()
     .padStart(2, "0");
   const min = (minutes % 60).toString().padStart(2, "0");

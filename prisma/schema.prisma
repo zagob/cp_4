@@ -27,6 +27,7 @@ model Point {
   time2     Int
   time3     Int
   time4     Int
+  holiday   Boolean? @default(false)
   createdAt DateTime
   updatedAt DateTime @updatedAt
 

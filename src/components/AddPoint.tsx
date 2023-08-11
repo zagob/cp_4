@@ -6,9 +6,11 @@ import { Button } from "./ui/Button";
 import { timeToMinutes } from "@/utils/time";
 import { LabelInput } from "./ui/LabelInput";
 import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { Checkbox } from "./ui/Checkbox";
 import { formatISO } from "date-fns";
+import { toast } from "react-hot-toast";
+import { usePointProvider } from "@/contexts/PointProvider";
 
 type State = {
   time1: string;
@@ -47,6 +49,8 @@ const reducer = (state: State, action: Action): State => {
 };
 
 export function AddPoint() {
+  const { onChangeFilterDate, disabledDays, onRefechPoints } =
+    usePointProvider();
   const [checkedHoliday, setCheckHoliday] = useState(false);
   const [state, dispatch] = useReducer(reducer, {
     time1: "",
@@ -78,25 +82,23 @@ export function AddPoint() {
         time2: timeToMinutes(state.time2),
         time3: timeToMinutes(state.time3),
         time4: timeToMinutes(state.time4),
-        createdAt: transformDate?.toISOString(),
-        date: formatISO(new Date(transformDate!), {
-          representation: "date",
-        }),
+        createdAt: formatISO(new Date(transformDate!)),
+        holiday: checkedHoliday,
       };
 
       console.log("values", values);
 
-      // return;
-
       const { time1, time2, time3, time4 } = values;
 
       if (!values.createdAt) {
-        return alert("É necessário uma data válida");
+        toast.error("É necessário uma data válida");
+        return;
       }
 
       if (!checkedHoliday) {
         if (!validStateTimeEqualToString) {
-          return alert("Existem valores invalidos para serem preenchidos");
+          toast.error("Existem valores invalidos para serem preenchidos");
+          return;
         }
       }
 
@@ -108,7 +110,8 @@ export function AddPoint() {
         time2 > time4 ||
         time3 > time4
       ) {
-        return alert("Valores inválidos de horários");
+        toast.error("Valores inválidos de horários");
+        return;
       }
 
       const response = await axios.post("/api/point/create", values);
@@ -120,11 +123,12 @@ export function AddPoint() {
       if (!data) {
         return;
       }
-      alert("success");
+      toast.success("Ponto criado com sucesso!");
+      onRefechPoints();
     },
 
-    onError() {
-      return alert("error");
+    onError(error: AxiosError) {
+      return toast.error(`Erro ao criar ponto! ${error?.response?.data}`);
     },
   });
 
@@ -133,6 +137,8 @@ export function AddPoint() {
       <Calendar
         selected={state.dateSelected}
         onSelect={(date) => dispatch({ type: "DATE", value: date })}
+        onChangeMonth={onChangeFilterDate}
+        disabledDays={disabledDays}
       />
 
       <form onSubmit={handleAddPoint} className="grid gap-2">

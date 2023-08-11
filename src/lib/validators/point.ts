@@ -5,6 +5,7 @@ export const PointValidator = z.object({
   time2: z.number(),
   time3: z.number(),
   time4: z.number(),
+  holiday: z.boolean(),
   createdAt: z.string(),
 });
 

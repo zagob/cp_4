@@ -5,9 +5,16 @@ import { format } from "date-fns";
 interface CalendarProps {
   selected: Date | undefined;
   onSelect: SelectSingleEventHandler | undefined;
+  onChangeMonth?: (date: Date) => void;
+  disabledDays?: Date[] | [];
 }
 
-export function Calendar({ onSelect, selected }: CalendarProps) {
+export function Calendar({
+  onSelect,
+  onChangeMonth,
+  selected,
+  disabledDays = [],
+}: CalendarProps) {
   const footer = selected ? (
     <span className="text-xs">
       Data selecionada:{" "}
@@ -26,7 +33,22 @@ export function Calendar({ onSelect, selected }: CalendarProps) {
       mode="single"
       selected={selected}
       onSelect={onSelect}
+      onMonthChange={onChangeMonth}
       captionLayout="dropdown"
+      // disabled={[{ dayOfWeek: [0, 6] }, ...disabledDays]}
+      disabled={[
+        { dayOfWeek: [0, 6] },
+        ...disabledDays.map((item) => new Date(item)),
+      ]}
+      modifiers={{
+        available: { dayOfWeek: [1, 2, 3, 4, 5] },
+      }}
+      modifiersStyles={{
+        disabled: {
+          cursor: "not-allowed",
+          opacity: 0.4,
+        },
+      }}
       classNames={{
         months:
           "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 bg-zinc-900 rounded p-4",

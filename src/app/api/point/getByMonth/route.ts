@@ -1,4 +1,5 @@
 import { db } from "@/lib/prisma";
+import { transformPoints } from "@/utils/point";
 import { minutesToTime } from "@/utils/time";
 
 export async function GET(req: Request) {
@@ -18,44 +19,20 @@ export async function GET(req: Request) {
           lte: lastDayOfMonth,
         },
       },
+      orderBy: {
+        createdAt: "asc",
+      },
     });
 
-    console.log("points", points);
+    const disabledDays = points.map((point) => new Date(point.createdAt));
 
-    const formatPoints = points.map((point) => {
-      const times1 = point.time2 - point.time1;
-      const times2 = point.time4 - point.time3;
-      const totalTimes = times1 + times2;
-      const countTotalTimeWithTotalWork = totalTimes - 480;
-      const status =
-        countTotalTimeWithTotalWork < 480
-          ? "DOWN"
-          : countTotalTimeWithTotalWork > 480
-          ? "UP"
-          : "EQUAL";
-
-      return {
-        ...point,
-        time1: minutesToTime(point.time1),
-        time2: minutesToTime(point.time2),
-        time3: minutesToTime(point.time3),
-        time4: minutesToTime(point.time4),
-        lunch: minutesToTime(point.time3 - point.time2),
-        totalTimes: minutesToTime(totalTimes),
-        status,
-        holiday:
-          point.time1 === 0 &&
-          point.time2 === 0 &&
-          point.time3 === 0 &&
-          point.time4 === 0,
-      };
-    });
-
-    console.log("formatPoints", formatPoints);
+    const formatPoints = transformPoints(points, 480);
 
     return new Response(
       JSON.stringify({
         points: formatPoints,
+        disabledDays,
+        testePoints: points,
       })
     );
   } catch (error) {}
