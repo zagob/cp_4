@@ -24,15 +24,42 @@ export async function GET(req: Request) {
       },
     });
 
+    const pointsStatus = await db.point.findMany({
+      where: {
+        createdAt: {
+          gte: firstDayOfMonth,
+          lte: lastDayOfMonth,
+        },
+        holiday: false,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
+
     const disabledDays = points.map((point) => new Date(point.createdAt));
 
     const formatPoints = transformPoints(points, 480);
+    const formatPointsStatus = transformPoints(pointsStatus, 480).reduce(
+      (acc, value) => {
+        if (value.status === -1 || value.status === 1) {
+          acc.totalMinutes = acc.totalMinutes + value.bonusMinutes;
+          return acc;
+        }
+
+        return acc;
+      },
+      {
+        totalMinutes: 0,
+      }
+    );
 
     return new Response(
       JSON.stringify({
         points: formatPoints,
         disabledDays,
         testePoints: points,
+        bonusByMonth: formatPointsStatus,
       })
     );
   } catch (error) {}

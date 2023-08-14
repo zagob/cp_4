@@ -14,8 +14,6 @@ export async function POST(req: Request) {
       },
     });
 
-    console.log("findPointSameDate", findPointSameDate);
-
     if (findPointSameDate) {
       return new Response("Point already exist", { status: 400 });
     }
@@ -26,6 +24,7 @@ export async function POST(req: Request) {
 
     return new Response("Create infoPoint Success");
   } catch (error) {
+    console.log("errrr", error);
     if (error instanceof z.ZodError) {
       return new Response("Invalid data request", { status: 422 });
     }

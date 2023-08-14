@@ -20,27 +20,29 @@ interface PointsUseQueryProps {
 }
 
 interface PointContextProps {
-  month: number;
-  onBackMonth: () => void;
-  onNextMonth: () => void;
+  onChangeMonth: (month: number) => void;
+  onChangeYear: (year: number) => void;
   onChangeFilterDate: (date: Date) => void;
   filterMonth: number;
   filterYear: number;
   points: PointsUseQueryProps[] | [];
   disabledDays: Date[] | [];
+  bonusByMonth: number | undefined;
   onRefechPoints: () => void;
 }
 
 export const PointContext = createContext({} as PointContextProps);
 
 export function PointProvider({ children }: { children: ReactNode }) {
-  const [month, setMonth] = useState(getMonth(new Date()) + 1);
   const [filterMonth, setFilterMonth] = useState(getMonth(new Date()) + 1);
   const [filterYear, setFilterYear] = useState(getYear(new Date()));
 
   const { data, refetch } = useQuery<{
     points: PointsUseQueryProps[];
     disabledDays: Date[] | [];
+    bonusByMonth: {
+      totalMinutes: number;
+    };
   }>({
     queryKey: ["pointsByMonth", filterMonth, filterYear],
     queryFn: async () => {
@@ -56,6 +58,23 @@ export function PointProvider({ children }: { children: ReactNode }) {
     refetchOnWindowFocus: true,
   });
 
+  const { data: dataMonths } = useQuery({
+    queryKey: ["pointsByYear", filterYear],
+    queryFn: async () => {
+      const { data } = await axios.get("/api/point/getByYear", {
+        params: {
+          // month: 0,
+          year: filterYear,
+        },
+      });
+
+      console.log("getByYear------", data);
+
+      return data;
+    },
+    refetchOnWindowFocus: true,
+  });
+
   console.log("filter date", filterMonth, filterYear);
   console.log("data", data);
 
@@ -63,27 +82,27 @@ export function PointProvider({ children }: { children: ReactNode }) {
     refetch();
   }
 
-  function onBackMonth() {
-    setMonth((item) => item - 1);
-  }
-
-  function onNextMonth() {
-    setMonth((item) => item + 1);
-  }
-
   function onChangeFilterDate(date: Date) {
     setFilterMonth(getMonth(date) + 1);
     setFilterYear(getYear(date));
   }
 
+  function onChangeMonth(month: number) {
+    setFilterMonth(month);
+  }
+
+  function onChangeYear(year: number) {
+    setFilterYear(year);
+  }
+
   return (
     <PointContext.Provider
       value={{
-        month,
-        onBackMonth,
-        onNextMonth,
+        onChangeYear,
+        onChangeMonth,
         onChangeFilterDate,
         onRefechPoints,
+        bonusByMonth: data?.bonusByMonth.totalMinutes,
         filterMonth,
         filterYear,
         points: data?.points ?? [],

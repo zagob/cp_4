@@ -16,7 +16,6 @@ function GetInfoPoint() {
       return data;
     },
     refetchOnWindowFocus: true,
-    // suspense: true,
   });
 }
 

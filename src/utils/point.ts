@@ -6,7 +6,7 @@ interface PointProps {
   time2: number;
   time3: number;
   time4: number;
-  holiday: boolean | null;
+  holiday?: boolean | null;
   createdAt: Date;
 }
 
@@ -35,6 +35,7 @@ export function transformPoints(
         timeAfteernon,
         totalWork,
         bonus: minutesToTime(Math.abs(bonus)),
+        bonusMinutes: bonus,
         status,
         holiday,
       };

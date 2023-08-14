@@ -2,35 +2,38 @@ import { Button } from "./ui/Button";
 import { format } from "date-fns";
 import ptBr from "date-fns/locale/pt-BR";
 import { Select } from "./ui/Select";
+import { usePointProvider } from "@/contexts/PointProvider";
+import { useMemo } from "react";
 
-interface FilterProps {
-  month: number;
-  year: number;
-  onBackMonth: () => void;
-  onNextMonth: () => void;
-}
+export function Filter() {
+  const { filterMonth, filterYear, onChangeMonth } = usePointProvider();
 
-export function Filter({ month, year, onBackMonth, onNextMonth }: FilterProps) {
+  const months = useMemo(() => {
+    return Array.from({ length: 12 }).map((_, index) => {
+      const monthNumber = index + 1;
+      return {
+        value: monthNumber.toString(),
+        label: format(new Date(filterYear, monthNumber, 0), "MMMM", {
+          locale: ptBr,
+        }),
+      };
+    });
+  }, [filterMonth, filterYear]);
+  console.log("monthsmonths", months);
   return (
     <>
-      <div className="flex items-center gap-2 w-[400px]  p-2">
-        <div className="flex items-center border-zinc-600 h-fit w-fit rounded">
-          <Button disabled={month === 1} onClick={onBackMonth}>
-            {"<"}
-          </Button>
-          <div className="h-full w-[150px] text-center">
-            {format(new Date(year, month, 0), "MMMM", {
-              locale: ptBr,
-            })}
-          </div>
-          <Button disabled={month === 12} onClick={onNextMonth}>
-            {">"}
-          </Button>
-        </div>
-
-        <span>{year}</span>
+      <div className="flex items-center gap-2 w-[300px]  p-2">
+        <Select
+          value={filterMonth.toString()}
+          onValueChange={(month) => onChangeMonth(Number(month))}
+          items={months}
+        />
+        <Select
+          value={filterMonth.toString()}
+          onValueChange={(month) => onChangeMonth(Number(month))}
+          items={months}
+        />
       </div>
-      <Select />
     </>
   );
 }

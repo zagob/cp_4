@@ -8,7 +8,7 @@ export async function GET(req: Request) {
       },
     });
 
-    console.log("infoPoint", infoPoint);
+    // console.log("infoPoint", infoPoint);
 
     return new Response(
       JSON.stringify({

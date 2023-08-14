@@ -3,14 +3,15 @@
 import { FormEvent, useReducer, useState } from "react";
 import { Calendar } from "./ui/Calendar";
 import { Button } from "./ui/Button";
-import { timeToMinutes } from "@/utils/time";
+import { minutesToTime, timeToMinutes } from "@/utils/time";
 import { LabelInput } from "./ui/LabelInput";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import { Checkbox } from "./ui/Checkbox";
-import { formatISO } from "date-fns";
+import { format, formatISO } from "date-fns";
 import { toast } from "react-hot-toast";
 import { usePointProvider } from "@/contexts/PointProvider";
+import clsx from "clsx";
 
 type State = {
   time1: string;
@@ -26,6 +27,7 @@ type Action =
       input: "time1" | "time2" | "time3" | "time4";
       value: string;
     }
+  | { type: "SETVALUE"; value: string }
   | { type: "DATE"; value: Date | undefined }
   | { type: "RESET" };
 
@@ -33,6 +35,14 @@ const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case "VALUE":
       return { ...state, [action.input]: action.value };
+    case "SETVALUE":
+      return {
+        ...state,
+        time1: action.value,
+        time2: action.value,
+        time3: action.value,
+        time4: action.value,
+      };
     case "RESET":
       return {
         time1: "",
@@ -49,9 +59,16 @@ const reducer = (state: State, action: Action): State => {
 };
 
 export function AddPoint() {
-  const { onChangeFilterDate, disabledDays, onRefechPoints } =
-    usePointProvider();
+  const {
+    onChangeFilterDate,
+    disabledDays,
+    onRefechPoints,
+    filterMonth,
+    filterYear,
+    bonusByMonth,
+  } = usePointProvider();
   const [checkedHoliday, setCheckHoliday] = useState(false);
+  const [missPoint, setMissPoint] = useState(false);
   const [state, dispatch] = useReducer(reducer, {
     time1: "",
     time2: "",
@@ -77,6 +94,18 @@ export function AddPoint() {
 
       const transformDate = state.dateSelected;
 
+      if (!transformDate) {
+        toast.error("Adicione uma data");
+        return;
+      }
+
+      const dayWeek = new Date(transformDate).getDay();
+
+      if (dayWeek === 0 || dayWeek === 6) {
+        toast.error("Data invalida");
+        return;
+      }
+
       const values = {
         time1: timeToMinutes(state.time1),
         time2: timeToMinutes(state.time2),
@@ -88,10 +117,21 @@ export function AddPoint() {
 
       console.log("values", values);
 
+      const existSameDate = disabledDays.find(
+        (date) =>
+          format(new Date(date), "dd-MM-yyyy") ===
+          format(new Date(transformDate!), "dd-MM-yyy")
+      );
+      console.log(existSameDate);
       const { time1, time2, time3, time4 } = values;
 
       if (!values.createdAt) {
         toast.error("É necessário uma data válida");
+        return;
+      }
+
+      if (existSameDate) {
+        toast.error("Ja existe uma data cadastrada");
         return;
       }
 
@@ -133,14 +173,24 @@ export function AddPoint() {
   });
 
   return (
-    <div className="w-[340px] bg-zinc-800 rounded shadow-md p-2 pt-10 flex flex-col items-center gap-6">
+    <div className="w-[340px] bg-zinc-800 rounded shadow-md p-2 pt-6 flex flex-col items-center gap-6">
+      <div className="bg-zinc-900 w-fit py-1 px-28 rounded">
+        <h4
+          className={clsx("text-xl", {
+            ["text-green-500"]: Math.sign(bonusByMonth!) === 1,
+            ["text-red-500"]: Math.sign(bonusByMonth!) === -1,
+          })}
+        >
+          {minutesToTime(Math.abs(bonusByMonth!))}
+        </h4>
+      </div>
       <Calendar
         selected={state.dateSelected}
         onSelect={(date) => dispatch({ type: "DATE", value: date })}
         onChangeMonth={onChangeFilterDate}
+        month={new Date(filterYear, filterMonth, 0)}
         disabledDays={disabledDays}
       />
-
       <form onSubmit={handleAddPoint} className="grid gap-2">
         <div className="grid gap-2 px-5">
           <div className="flex gap-2">
@@ -196,11 +246,27 @@ export function AddPoint() {
             />
           </div>
 
-          <Checkbox
-            checked={checkedHoliday}
-            onChecked={setCheckHoliday}
-            label="Feriado?"
-          />
+          <div className="flex items-center gap-4">
+            <Checkbox
+              checked={checkedHoliday}
+              onChecked={setCheckHoliday}
+              label="Feriado?"
+              disabled={missPoint}
+            />
+            <Checkbox
+              checked={missPoint}
+              onChecked={(checked) => {
+                setMissPoint(checked);
+                if (checked) {
+                  dispatch({ type: "SETVALUE", value: "00:00" });
+                } else {
+                  dispatch({ type: "SETVALUE", value: "" });
+                }
+              }}
+              label="Falta?"
+              disabled={checkedHoliday}
+            />
+          </div>
         </div>
 
         <div className="w-full px-5">

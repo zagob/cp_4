@@ -6,12 +6,14 @@ interface CalendarProps {
   selected: Date | undefined;
   onSelect: SelectSingleEventHandler | undefined;
   onChangeMonth?: (date: Date) => void;
+  month?: Date;
   disabledDays?: Date[] | [];
 }
 
 export function Calendar({
   onSelect,
   onChangeMonth,
+  month,
   selected,
   disabledDays = [],
 }: CalendarProps) {
@@ -33,9 +35,11 @@ export function Calendar({
       mode="single"
       selected={selected}
       onSelect={onSelect}
+      month={month}
       onMonthChange={onChangeMonth}
       captionLayout="dropdown"
-      // disabled={[{ dayOfWeek: [0, 6] }, ...disabledDays]}
+      // fromYear={2023}
+      // toYear={2023}
       disabled={[
         { dayOfWeek: [0, 6] },
         ...disabledDays.map((item) => new Date(item)),
@@ -71,7 +75,7 @@ export function Calendar({
         day_today:
           "text-green-500 hover:text-green-500 bg-zinc-900 text-accent-foreground",
         day_outside: "text-muted-foreground opacity-50",
-        day_disabled: "text-muted-foreground opacity-50",
+        day_disabled: "text-muted-foreground opacity-50 hover:bg-zinc-900",
         day_range_middle:
           "aria-selected:bg-accent aria-selected:text-accent-foreground",
         day_hidden: "invisible",

@@ -7,17 +7,19 @@ import { FiTrash2 } from "react-icons/fi";
 import { ModalConfirmDeletePoint } from "./ModalConfirmDeletePoint";
 
 export function DataTable() {
-  const { filterMonth, filterYear, onBackMonth, onNextMonth, points } =
-    usePointProvider();
+  const { points } = usePointProvider();
+
+  if (points.length === 0) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-zinc-800 rounded shadow-md px-4 pt-4">
+        <h1 className="text-2xl text-zinc-500">Nenhum ponto cadastrado</h1>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex-1 bg-zinc-800 rounded shadow-md p-2">
-      <Filter
-        month={filterMonth}
-        year={filterYear}
-        onBackMonth={onBackMonth}
-        onNextMonth={onNextMonth}
-      />
+    <div className="flex-1 bg-zinc-800 rounded shadow-md px-4 pt-4">
+      {/* <Filter /> */}
       <Table
         data={points}
         classValue={(row) => {
