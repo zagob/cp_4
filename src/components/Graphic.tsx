@@ -1,3 +1,9 @@
-export function Graphic() {
-  return <div className="bg-zinc-800 rounded shadow-md p-2">graph</div>;
+import { Card } from "./ui/Card";
+
+interface GraphicProps {
+  infoPoint: boolean;
+}
+
+export function Graphic({ infoPoint }: GraphicProps) {
+  return <Card disabled={infoPoint}>graph</Card>;
 }

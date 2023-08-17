@@ -18,7 +18,8 @@ export default function RootLayout({
   return (
     <html lang="en" className="bg-zinc-900 text-zinc-50">
       <body className={inter.className}>
-        <Promises>{children}</Promises>
+        {children}
+        {/* <Promises>{children}</Promises> */}
       </body>
     </html>
   );

@@ -1,19 +1,22 @@
 import { Table } from "./ui/Table";
 import { format } from "date-fns";
-import { Filter } from "./Filter";
 import { usePointProvider } from "@/contexts/PointProvider";
 import clsx from "clsx";
-import { FiTrash2 } from "react-icons/fi";
 import { ModalConfirmDeletePoint } from "./ModalConfirmDeletePoint";
+import { Card } from "./ui/Card";
 
-export function DataTable() {
+interface DataTableProps {
+  infoPoint: boolean;
+}
+
+export function DataTable({ infoPoint }: DataTableProps) {
   const { points } = usePointProvider();
 
   if (points.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-zinc-800 rounded shadow-md px-4 pt-4">
+      <Card disabled={infoPoint} className="flex items-center justify-center">
         <h1 className="text-2xl text-zinc-500">Nenhum ponto cadastrado</h1>
-      </div>
+      </Card>
     );
   }
 

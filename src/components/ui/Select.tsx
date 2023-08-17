@@ -35,6 +35,7 @@ export function Select({ items, value, onValueChange }: SelectProps) {
             <SelectRadix.Group>
               {items.map((item) => (
                 <SelectRadix.Item
+                  key={item.value}
                   value={item.value}
                   className="text-[13px] leading-none text-violet11 rounded-[3px] flex items-center h-[25px] pr-[35px] pl-[25px] relative select-none data-[disabled]:text-mauve8 data-[disabled]:pointer-events-none data-[highlighted]:outline-none data-[highlighted]:bg-violet9 data-[highlighted]:text-violet1"
                 >

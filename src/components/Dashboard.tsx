@@ -1,4 +1,4 @@
-// "use client";
+"use client";
 import { useQuery } from "@tanstack/react-query";
 import { AddInfoPoint } from "./AddInfoPoint";
 import { AddPoint } from "./AddPoint";
@@ -19,14 +19,21 @@ function GetInfoPoint() {
   });
 }
 
-export function Dashboard() {
-  const { data, isLoading } = GetInfoPoint();
+interface GetInfoPointProps {
+  data: {
+    infoPoint: null | {};
+  };
+  isLoading: boolean;
+}
 
-  console.log(data);
+export function Dashboard() {
+  const { data, isLoading } = GetInfoPoint() as GetInfoPointProps;
+
+  console.log("info", data);
 
   return (
-    <div className="border border-zinc-700 min-h-screen p-2 grid gap-2">
-      <div className="flex gap-2">
+    <div className="border border-zinc-700 min-h-screen p-2 grid grid-rows-5 gap-2">
+      <div className="flex gap-2 row-span-4">
         {isLoading ? (
           <div className="w-[340px] bg-zinc-800 rounded shadow-md p-2 pt-10 flex flex-col items-center justify-center gap-6">
             <LiaSpinnerSolid size={36} className="animate-spin text-zinc-300" />
@@ -35,10 +42,10 @@ export function Dashboard() {
           <>{data?.infoPoint ? <AddPoint /> : <AddInfoPoint />}</>
         )}
 
-        <DataTable />
+        <DataTable infoPoint={!data?.infoPoint} />
       </div>
 
-      <Graphic />
+      <Graphic infoPoint={!data?.infoPoint} />
     </div>
   );
 }

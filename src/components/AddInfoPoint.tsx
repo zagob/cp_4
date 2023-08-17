@@ -1,3 +1,4 @@
+"use client";
 import { FormEvent, useReducer } from "react";
 import { Button } from "./ui/Button";
 import { LabelInput } from "./ui/LabelInput";

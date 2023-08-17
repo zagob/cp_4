@@ -1,9 +1,16 @@
+import { getAuthSession } from "@/lib/auth";
 import { db } from "@/lib/prisma";
 import { InfoPointValidator } from "@/lib/validators/infoPoint";
 import { z } from "zod";
 
 export async function POST(req: Request) {
   try {
+    const session = await getAuthSession();
+
+    if (!session?.user) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
     const body = await req.json();
 
     const data = InfoPointValidator.parse(body);
@@ -18,8 +25,17 @@ export async function POST(req: Request) {
       return new Response("totalMinutes not equal at times", { status: 400 });
     }
 
-    await db.infoPoint.create({
+    const infoPoint = await db.infoPoint.create({
       data,
+    });
+
+    await db.user.update({
+      where: {
+        id: session.user.id,
+      },
+      data: {
+        // infoPointId: infoPoint.id,
+      },
     });
 
     return new Response("infoPoint Created Success", { status: 200 });

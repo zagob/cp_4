@@ -1,20 +1,20 @@
-"use client";
-
 import { Dashboard } from "@/components/Dashboard";
-import { Button } from "@/components/ui/Button";
-import { Calendar } from "@/components/ui/Calendar";
-import { InputTime } from "@/components/ui/InputTime";
-import { Table } from "@/components/ui/Table";
-import { useState } from "react";
+import { SignIn } from "@/components/SignIn";
+import { Promises } from "@/components/promises";
+import { getAuthSession } from "@/lib/auth";
 
-export default function Home() {
+export default async function Home() {
+  const session = await getAuthSession();
+
+  console.log("s", session);
+
+  if (!session) {
+    <SignIn />;
+  }
+
   return (
-    <div>
-      {/*  />
-     
-      <InputTime placeholder="00:00" />
-      <Button>Adicionar</Button> */}
+    <Promises>
       <Dashboard />
-    </div>
+    </Promises>
   );
 }
