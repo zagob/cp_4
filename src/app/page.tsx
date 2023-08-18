@@ -9,7 +9,7 @@ export default async function Home() {
   console.log("s", session);
 
   if (!session) {
-    <SignIn />;
+    return <SignIn />;
   }
 
   return (

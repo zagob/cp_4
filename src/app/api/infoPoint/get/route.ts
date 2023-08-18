@@ -1,14 +1,19 @@
+import { getAuthSession } from "@/lib/auth";
 import { db } from "@/lib/prisma";
 
 export async function GET(req: Request) {
   try {
+    const session = await getAuthSession();
+
+    if (!session?.user) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
     const infoPoint = await db.infoPoint.findUnique({
       where: {
-        id: "cll5aowdf0000g9lcxw0xf8s5",
+        userId: session.user.id,
       },
     });
-
-    // console.log("infoPoint", infoPoint);
 
     return new Response(
       JSON.stringify({

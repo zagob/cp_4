@@ -1,9 +1,16 @@
+import { getAuthSession } from "@/lib/auth";
 import { db } from "@/lib/prisma";
 import { PointValidator } from "@/lib/validators/point";
 import { z } from "zod";
 
 export async function POST(req: Request) {
   try {
+    const session = await getAuthSession();
+
+    if (!session?.user) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
     const body = await req.json();
 
     const data = PointValidator.parse(body);
@@ -19,7 +26,10 @@ export async function POST(req: Request) {
     }
 
     await db.point.create({
-      data,
+      data: {
+        ...data,
+        userId: session.user.id,
+      },
     });
 
     return new Response("Create infoPoint Success");

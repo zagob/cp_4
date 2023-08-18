@@ -25,16 +25,14 @@ export async function POST(req: Request) {
       return new Response("totalMinutes not equal at times", { status: 400 });
     }
 
-    const infoPoint = await db.infoPoint.create({
-      data,
-    });
-
     await db.user.update({
       where: {
         id: session.user.id,
       },
       data: {
-        // infoPointId: infoPoint.id,
+        infoPoint: {
+          create: data,
+        },
       },
     });
 

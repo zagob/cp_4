@@ -1,8 +1,15 @@
+import { getAuthSession } from "@/lib/auth";
 import { db } from "@/lib/prisma";
 import { z } from "zod";
 
 export async function DELETE(req: Request) {
   try {
+    const session = await getAuthSession();
+
+    if (!session?.user) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
     const url = new URL(req.url);
 
     const id = url.searchParams.get("id")?.toString();
@@ -20,6 +27,7 @@ export async function DELETE(req: Request) {
     await db.point.delete({
       where: {
         id,
+        userId: session.user.id,
       },
     });
 

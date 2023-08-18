@@ -7,12 +7,12 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import clsx, { ClassValue } from "clsx";
+import clsx from "clsx";
 
 interface TableProps<TData, TValue> {
   data: TData[];
   columns: ColumnDef<TData, TValue>[];
-  classValue?: (row: Row<TData>) => ClassValue[];
+  classValue?: (row: Row<TData>) => Record<string, boolean>;
 }
 
 export function Table<TData, TValue>({

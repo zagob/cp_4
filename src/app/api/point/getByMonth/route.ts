@@ -1,9 +1,15 @@
+import { getAuthSession } from "@/lib/auth";
 import { db } from "@/lib/prisma";
 import { transformPoints } from "@/utils/point";
-import { minutesToTime } from "@/utils/time";
 
 export async function GET(req: Request) {
   try {
+    const session = await getAuthSession();
+
+    if (!session?.user) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
     const url = new URL(req.url);
 
     const month = Number(url.searchParams.get("month"));
@@ -14,6 +20,7 @@ export async function GET(req: Request) {
 
     const points = await db.point.findMany({
       where: {
+        userId: session.user.id,
         createdAt: {
           gte: firstDayOfMonth,
           lte: lastDayOfMonth,
@@ -26,6 +33,7 @@ export async function GET(req: Request) {
 
     const pointsStatus = await db.point.findMany({
       where: {
+        userId: session.user.id,
         createdAt: {
           gte: firstDayOfMonth,
           lte: lastDayOfMonth,
