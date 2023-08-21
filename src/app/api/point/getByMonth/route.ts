@@ -10,6 +10,18 @@ export async function GET(req: Request) {
       return new Response("Unauthorized", { status: 401 });
     }
 
+    const infoPoint = await db.infoPoint.findUnique({
+      where: {
+        userId: session.user.id,
+      },
+    });
+
+    if (!infoPoint) {
+      return new Response("Not found info points", { status: 404 });
+    }
+
+    const totalMinutes = infoPoint?.totalMinutes;
+
     const url = new URL(req.url);
 
     const month = Number(url.searchParams.get("month"));
@@ -47,8 +59,11 @@ export async function GET(req: Request) {
 
     const disabledDays = points.map((point) => new Date(point.createdAt));
 
-    const formatPoints = transformPoints(points, 480);
-    const formatPointsStatus = transformPoints(pointsStatus, 480).reduce(
+    const formatPoints = transformPoints(points, totalMinutes);
+    const formatPointsStatus = transformPoints(
+      pointsStatus,
+      totalMinutes
+    ).reduce(
       (acc, value) => {
         if (value.status === -1 || value.status === 1) {
           acc.totalMinutes = acc.totalMinutes + value.bonusMinutes;

@@ -12,6 +12,18 @@ export async function GET(req: Request) {
       return new Response("Unauthorized", { status: 401 });
     }
 
+    const infoPoint = await db.infoPoint.findUnique({
+      where: {
+        userId: session.user.id,
+      },
+    });
+
+    if (!infoPoint) {
+      return new Response("Not found info points", { status: 404 });
+    }
+
+    const totalMinutes = infoPoint?.totalMinutes;
+
     const url = new URL(req.url);
 
     const year = Number(url.searchParams.get("year"));
@@ -33,7 +45,7 @@ export async function GET(req: Request) {
       },
     });
 
-    const pointsTransform = transformPoints(points, 480);
+    const pointsTransform = transformPoints(points, totalMinutes);
 
     return new Response(
       JSON.stringify({

@@ -14,7 +14,7 @@ export default async function Home() {
 
   return (
     <Promises>
-      <Dashboard />
+      <Dashboard user={session.user} />
     </Promises>
   );
 }

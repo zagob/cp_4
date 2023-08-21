@@ -14,7 +14,10 @@ export function DataTable({ infoPoint }: DataTableProps) {
 
   if (points.length === 0) {
     return (
-      <Card disabled={infoPoint} className="flex items-center justify-center">
+      <Card
+        disabled={infoPoint}
+        className="flex flex-1 items-center justify-center"
+      >
         <h1 className="text-2xl text-zinc-500">Nenhum ponto cadastrado</h1>
       </Card>
     );
