@@ -1,6 +1,7 @@
 import { getAuthSession } from "@/lib/auth";
-import { db } from "@/lib/prisma";
+import { db } from "@/lib/firebase";
 import { transformPoints } from "@/utils/point";
+import { format } from "date-fns";
 
 export async function GET(req: Request) {
   try {
@@ -10,11 +11,15 @@ export async function GET(req: Request) {
       return new Response("Unauthorized", { status: 401 });
     }
 
-    const infoPoint = await db.infoPoint.findUnique({
-      where: {
-        userId: session.user.id,
-      },
-    });
+    const query = db.collection("infoPoints").doc(session.user.id);
+
+    const infoPoint = (await query.get()).data();
+
+    // const infoPoint = await db.infoPoint.findUnique({
+    //   where: {
+    //     userId: session.user.id,
+    //   },
+    // });
 
     if (!infoPoint) {
       return new Response("Not found info points", { status: 404 });
@@ -27,41 +32,75 @@ export async function GET(req: Request) {
     const month = Number(url.searchParams.get("month"));
     const year = Number(url.searchParams.get("year"));
 
-    const firstDayOfMonth = new Date(year, month - 1, 1);
-    const lastDayOfMonth = new Date(year, month, 0);
+    const firstDayOfMonth = format(new Date(year, month - 1, 1), "yyyy-MM-dd");
+    const lastDayOfMonth = format(new Date(year, month, 0), "yyyy-MM-dd");
 
-    const points = await db.point.findMany({
-      where: {
-        userId: session.user.id,
-        createdAt: {
-          gte: firstDayOfMonth,
-          lte: lastDayOfMonth,
-        },
-      },
-      orderBy: {
-        createdAt: "asc",
-      },
-    });
+    console.log("firstDayOfMonth", firstDayOfMonth);
+    console.log("lastDayOfMonth", lastDayOfMonth);
 
-    const pointsStatus = await db.point.findMany({
-      where: {
-        userId: session.user.id,
-        createdAt: {
-          gte: firstDayOfMonth,
-          lte: lastDayOfMonth,
-        },
-        holiday: false,
-      },
-      orderBy: {
-        createdAt: "asc",
-      },
-    });
+    const points = db
+      .collection("users")
+      .doc(session.user.id)
+      .collection("points")
+      .where("createdAt", ">=", firstDayOfMonth)
+      .where("createdAt", "<=", lastDayOfMonth)
+      .orderBy("asc");
 
-    const disabledDays = points.map((point) => new Date(point.createdAt));
+    const pointsStatus = db
+      .collection("users")
+      .doc(session.user.id)
+      .collection("points")
+      .where("holiday", "==", false)
+      .where("createdAt", ">=", firstDayOfMonth)
+      .where("createdAt", "<=", lastDayOfMonth)
+      .orderBy("asc");
 
-    const formatPoints = transformPoints(points, totalMinutes);
+    const pointsData = (await points.get()).docs.map((point) => point.data());
+    const pointsStatusData = (await pointsStatus.get()).docs.map((point) =>
+      point.data()
+    );
+
+    // return new Response(
+    //   JSON.stringify({
+    //     points: [],
+    //     disabledDays: [],
+    //     testePoints: [],
+    //     bonusByMonth: [],
+    //   })
+    // );
+
+    // const points = await db.point.findMany({
+    //   where: {
+    //     userId: session.user.id,
+    //     createdAt: {
+    //       gte: firstDayOfMonth,
+    //       lte: lastDayOfMonth,
+    //     },
+    //   },
+    //   orderBy: {
+    //     createdAt: "asc",
+    //   },
+    // });
+
+    // const pointsStatus = await db.point.findMany({
+    //   where: {
+    //     userId: session.user.id,
+    //     createdAt: {
+    //       gte: firstDayOfMonth,
+    //       lte: lastDayOfMonth,
+    //     },
+    //     holiday: false,
+    //   },
+    //   orderBy: {
+    //     createdAt: "asc",
+    //   },
+    // });
+
+    const disabledDays = pointsData.map((point) => new Date(point.createdAt));
+
+    const formatPoints = transformPoints(pointsData, totalMinutes);
     const formatPointsStatus = transformPoints(
-      pointsStatus,
+      pointsStatusData,
       totalMinutes
     ).reduce(
       (acc, value) => {

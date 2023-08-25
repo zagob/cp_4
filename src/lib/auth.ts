@@ -2,8 +2,52 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { NextAuthOptions, getServerSession } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { db } from "./prisma";
+import { cert } from "firebase-admin/app";
+import { FirestoreAdapter } from "@auth/firebase-adapter";
 
-export const authOptions: NextAuthOptions = {
+export const authOptionsFirebase: NextAuthOptions = {
+  adapter: FirestoreAdapter({
+    credential: cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY!.replace(/\\n/g, "\n"),
+    }),
+  }),
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+  ],
+
+  callbacks: {
+    async session({ token, session, user, newSession }) {
+      // console.log("sess", session);
+      // console.log("token", token);
+      // console.log("user", user);
+      // console.log("newSession", newSession);
+      // if (token) {
+      //   session.user.id = token.id;
+      //   session.user.name = token.name;
+      //   session.user.email = token.email;
+      //   session.user.image = token.picture;
+      // }
+
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          id: user.id,
+        },
+      };
+    },
+    redirect() {
+      return "/";
+    },
+  },
+};
+
+export const authOptionsPrisma: NextAuthOptions = {
   adapter: PrismaAdapter(db),
   session: {
     strategy: "jwt",
@@ -28,6 +72,7 @@ export const authOptions: NextAuthOptions = {
 
       return session;
     },
+
     async jwt({ token, user }) {
       const dbUser = await db.user.findFirst({
         where: {
@@ -45,13 +90,13 @@ export const authOptions: NextAuthOptions = {
         name: dbUser.name,
         email: dbUser.email,
         picture: dbUser.image,
-        infoPoint: dbUser.infoPointId,
       };
     },
+
     redirect() {
       return "/";
     },
   },
 };
 
-export const getAuthSession = () => getServerSession(authOptions);
+export const getAuthSession = () => getServerSession(authOptionsFirebase);

@@ -74,7 +74,7 @@ export function AddPoint() {
     time2: "",
     time3: "",
     time4: "",
-    dateSelected: new Date(),
+    dateSelected: undefined,
   });
 
   console.log("state", state);

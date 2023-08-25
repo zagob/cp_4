@@ -1,5 +1,5 @@
 import { getAuthSession } from "@/lib/auth";
-import { db } from "@/lib/prisma";
+import { db } from "@/lib/firebase";
 import { InfoPointValidator } from "@/lib/validators/infoPoint";
 import { z } from "zod";
 
@@ -25,16 +25,20 @@ export async function POST(req: Request) {
       return new Response("totalMinutes not equal at times", { status: 400 });
     }
 
-    await db.user.update({
-      where: {
-        id: session.user.id,
-      },
-      data: {
-        infoPoint: {
-          create: data,
-        },
-      },
+    db.collection("infoPoints").doc(session.user.id).create({
+      test: "test",
     });
+
+    // await db.user.update({
+    //   where: {
+    //     id: session.user.id,
+    //   },
+    //   data: {
+    //     infoPoint: {
+    //       create: data,
+    //     },
+    //   },
+    // });
 
     return new Response("infoPoint Created Success", { status: 200 });
   } catch (error) {

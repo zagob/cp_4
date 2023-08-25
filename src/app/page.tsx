@@ -1,12 +1,23 @@
+"use client";
 import { Dashboard } from "@/components/Dashboard";
 import { SignIn } from "@/components/SignIn";
 import { Promises } from "@/components/promises";
-import { getAuthSession } from "@/lib/auth";
 
-export default async function Home() {
-  const session = await getAuthSession();
+import { signOut, useSession } from "next-auth/react";
 
-  console.log("s", session);
+export default function Home() {
+  const session = useSession();
+  console.log("session", session);
+
+  if (session.status === "loading") {
+    return <h1>Loading...</h1>;
+  }
+  // return (
+  //   <>
+  //     <h1>Loged - {session.data?.user.name}</h1>
+  //     <button onClick={() => signOut()}>logout</button>
+  //   </>
+  // );
 
   if (!session) {
     return <SignIn />;
@@ -14,7 +25,7 @@ export default async function Home() {
 
   return (
     <Promises>
-      <Dashboard user={session.user} />
+      <Dashboard user={session.data?.user ?? {}} />
     </Promises>
   );
 }

@@ -8,10 +8,10 @@ import axios from "axios";
 import { LiaSpinnerSolid } from "react-icons/lia";
 import { Card } from "./ui/Card";
 import Image from "next/image";
-import { getAuthSession } from "@/lib/auth";
 import { UserCreationRequest } from "@/lib/validators/user";
 import { FiPower } from "react-icons/fi";
 import { Button } from "./ui/Button";
+import { signOut } from "next-auth/react";
 
 function GetInfoPoint() {
   return useQuery({
@@ -39,6 +39,8 @@ interface DashboardProps {
 export function Dashboard({ user }: DashboardProps) {
   const { data, isLoading } = GetInfoPoint() as GetInfoPointProps;
 
+  console.log("data", data);
+
   return (
     <div className="border border-zinc-700 min-h-screen p-2 flex flex-col gap-2">
       <Card>
@@ -53,8 +55,8 @@ export function Dashboard({ user }: DashboardProps) {
             />
             <h2>{user.name}</h2>
           </div>
-          <Button className="flex items-center gap-2">
-            <FiPower size={20} clas />
+          <Button onClick={() => signOut()} className="flex items-center gap-2">
+            <FiPower size={20} />
             Sair
           </Button>
         </div>
@@ -68,7 +70,7 @@ export function Dashboard({ user }: DashboardProps) {
           <>{data?.infoPoint ? <AddPoint /> : <AddInfoPoint />}</>
         )}
 
-        <DataTable infoPoint={!data?.infoPoint} />
+        {/* <DataTable infoPoint={!data?.infoPoint} /> */}
       </div>
 
       {/* <Graphic infoPoint={!data?.infoPoint} /> */}
