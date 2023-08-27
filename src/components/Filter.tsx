@@ -1,4 +1,3 @@
-import { Button } from "./ui/Button";
 import { format } from "date-fns";
 import ptBr from "date-fns/locale/pt-BR";
 import { Select } from "./ui/Select";
@@ -18,7 +17,7 @@ export function Filter() {
         }),
       };
     });
-  }, [filterMonth, filterYear]);
+  }, [filterYear]);
 
   return (
     <>

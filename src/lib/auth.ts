@@ -3,7 +3,7 @@ import { NextAuthOptions, getServerSession } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { db } from "./prisma";
 import { cert } from "firebase-admin/app";
-import { FirestoreAdapter } from "@auth/firebase-adapter";
+import { FirestoreAdapter } from "@next-auth/firebase-adapter";
 
 export const authOptionsFirebase: NextAuthOptions = {
   adapter: FirestoreAdapter({
