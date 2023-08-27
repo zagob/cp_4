@@ -77,8 +77,6 @@ export function AddPoint() {
     dateSelected: undefined,
   });
 
-  console.log("state", state);
-
   const validStateTimeEqualToString = Object.values({
     time1: state.time1,
     time2: state.time2,
@@ -89,8 +87,6 @@ export function AddPoint() {
   const { mutate: handleAddPoint, isLoading } = useMutation({
     mutationFn: async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
-
-      console.log("state", state);
 
       const transformDate = state.dateSelected;
 
@@ -115,14 +111,12 @@ export function AddPoint() {
         holiday: checkedHoliday,
       };
 
-      console.log("values", values);
-
       const existSameDate = disabledDays.find(
         (date) =>
           format(new Date(date), "dd-MM-yyyy") ===
           format(new Date(transformDate!), "dd-MM-yyy")
       );
-      console.log(existSameDate);
+
       const { time1, time2, time3, time4 } = values;
 
       if (!values.createdAt) {
@@ -164,6 +158,8 @@ export function AddPoint() {
         return;
       }
       toast.success("Ponto criado com sucesso!");
+      setCheckHoliday(false);
+      setMissPoint(false);
       onRefechPoints();
     },
 
@@ -181,7 +177,11 @@ export function AddPoint() {
             ["text-red-500"]: Math.sign(bonusByMonth!) === -1,
           })}
         >
-          {minutesToTime(Math.abs(bonusByMonth!))}
+          {!bonusByMonth ? (
+            "--:--"
+          ) : (
+            <>{minutesToTime(Math.abs(bonusByMonth!))}</>
+          )}
         </h4>
       </div>
       <Calendar

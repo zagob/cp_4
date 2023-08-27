@@ -1,5 +1,5 @@
 import { getAuthSession } from "@/lib/auth";
-import { db } from "@/lib/prisma";
+import { db } from "@/lib/firebase";
 import { z } from "zod";
 
 export async function DELETE(req: Request) {
@@ -14,22 +14,23 @@ export async function DELETE(req: Request) {
 
     const id = url.searchParams.get("id")?.toString();
 
-    const existPoint = await db.point.findFirst({
-      where: {
-        id,
-      },
-    });
+    const existPoint = db
+      .collection("users")
+      .doc(session.user.id)
+      .collection("points")
+      .doc(id!);
 
     if (!existPoint) {
       return new Response("Not Exist point by ID", { status: 400 });
     }
 
-    await db.point.delete({
-      where: {
-        id,
-        userId: session.user.id,
-      },
-    });
+    db.collection("users")
+      .doc(session.user.id)
+      .collection("points")
+      .doc(id!)
+      .delete({
+        exists: true,
+      });
 
     return new Response("Point deleted Success");
   } catch (error) {

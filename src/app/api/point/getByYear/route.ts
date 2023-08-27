@@ -1,8 +1,8 @@
 import { getAuthSession } from "@/lib/auth";
-import { db } from "@/lib/prisma";
+import { db } from "@/lib/firebase";
 import { months } from "@/utils/months";
 import { transformPoints } from "@/utils/point";
-import { getMonth } from "date-fns";
+import { format, getMonth } from "date-fns";
 
 export async function GET(req: Request) {
   try {
@@ -12,38 +12,31 @@ export async function GET(req: Request) {
       return new Response("Unauthorized", { status: 401 });
     }
 
-    const infoPoint = await db.infoPoint.findUnique({
-      where: {
-        userId: session.user.id,
-      },
-    });
+    const totalMinutes: number | undefined = (
+      await db.collection("users").doc(session.user.id).get()
+    ).data()?.infoPoint.totalMinutes;
 
-    if (!infoPoint) {
+    if (!totalMinutes) {
       return new Response("Not found info points", { status: 404 });
     }
-
-    const totalMinutes = infoPoint?.totalMinutes;
 
     const url = new URL(req.url);
 
     const year = Number(url.searchParams.get("year"));
 
-    const firstDayOfMonth = new Date(year, 0, 1);
-    const lastDayOfMonth = new Date(year, 12, 0);
+    const firstDayOfMonth = format(new Date(year, 0, 1), "yyyy-MM-dd");
+    const lastDayOfMonth = format(new Date(year, 12, 0), "yyyy-MM-dd");
 
-    const points = await db.point.findMany({
-      where: {
-        userId: session.user.id,
-        createdAt: {
-          gte: firstDayOfMonth,
-          lte: lastDayOfMonth,
-        },
-        holiday: false,
-      },
-      orderBy: {
-        createdAt: "asc",
-      },
-    });
+    const queryPoints = db
+      .collection("users")
+      .doc(session.user.id)
+      .collection("points")
+      .where("createdAt", ">=", firstDayOfMonth)
+      .where("createdAt", "<=", lastDayOfMonth)
+      .where("holiday", "==", false)
+      .orderBy("createdAt", "asc");
+
+    const points = (await queryPoints.get()).docs.map((point) => point.data());
 
     const pointsTransform = transformPoints(points, totalMinutes);
 

@@ -6,6 +6,8 @@ import { timeToMinutes } from "@/utils/time";
 import { useMutation } from "@tanstack/react-query";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import axios from "axios";
+import { usePointProvider } from "@/contexts/PointProvider";
+import { toast } from "react-hot-toast";
 
 type State = {
   start1: string;
@@ -42,6 +44,7 @@ const reducer = (state: State, action: Action): State => {
 };
 
 export function AddInfoPoint() {
+  const { onRefetchInfoPoint } = usePointProvider();
   const [state, dispatch] = useReducer(reducer, {
     start1: "",
     exit1: "",
@@ -54,8 +57,6 @@ export function AddInfoPoint() {
     mutationFn: async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
 
-      console.log("state", state);
-
       const values = {
         start1: timeToMinutes(state.start1),
         exit1: timeToMinutes(state.exit1),
@@ -64,16 +65,16 @@ export function AddInfoPoint() {
         totalMinutes: timeToMinutes(state.totalMinutes),
       };
 
-      console.log("values", values);
       dispatch({ type: "RESET" });
       return await axios.post("/api/infoPoint/create", values);
     },
     onSuccess() {
-      return alert("success");
+      onRefetchInfoPoint();
+      return toast.success("Informacoes de pontos criados com sucesso");
     },
 
     onError() {
-      return alert("error");
+      return toast.error("Houve um erro, tente novamente!");
     },
   });
 

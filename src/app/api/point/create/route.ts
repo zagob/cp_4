@@ -16,24 +16,6 @@ export async function POST(req: Request) {
 
     const data = PointValidator.parse(body);
 
-    // console.log("data", data);
-
-    // const findPointSameDate = await db.point.findFirst({
-    //   where: {
-    //     createdAt: data.createdAt,
-    //   },
-    // });
-
-    // if (findPointSameDate) {
-    //   return new Response("Point already exist", { status: 400 });
-    // }
-
-    // await db.point.create({
-    //   data: {
-    //     ...data,
-    //     userId: session.user.id,
-    //   },
-    // });
     db.collection("users")
       .doc(session.user.id)
       .collection("points")
@@ -45,7 +27,6 @@ export async function POST(req: Request) {
 
     return new Response("Create infoPoint Success");
   } catch (error) {
-    console.log("errrr", error);
     if (error instanceof z.ZodError) {
       return new Response("Invalid data request", { status: 422 });
     }

@@ -1,4 +1,5 @@
 "use client";
+import { InfoPointProps } from "@/app/api/infoPoint/get/route";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { getMonth, getYear } from "date-fns";
@@ -30,6 +31,9 @@ interface PointContextProps {
   disabledDays: Date[] | [];
   bonusByMonth: number | undefined;
   onRefechPoints: () => void;
+  onRefetchInfoPoint: () => void;
+  infoPointData: InfoPointProps | null;
+  isLoadingInfoPoint: boolean;
 }
 
 export const PointContext = createContext({} as PointContextProps);
@@ -38,6 +42,26 @@ export function PointProvider({ children }: { children: ReactNode }) {
   const [filterMonth, setFilterMonth] = useState(getMonth(new Date()) + 1);
   const [filterYear, setFilterYear] = useState(getYear(new Date()));
 
+  const {
+    data: infoPointData,
+    isLoading: isLoadingInfoPoint,
+    refetch: refetchInfoPoint,
+  } = useQuery({
+    queryKey: ["infoPoint"],
+    queryFn: async () => {
+      const { data } = await axios.get<{ totalMinutes: InfoPointProps }>(
+        "/api/infoPoint/get"
+      );
+
+      if (!data.totalMinutes) {
+        return null;
+      }
+
+      return data?.totalMinutes;
+    },
+    refetchOnWindowFocus: false,
+  });
+
   const { data, refetch } = useQuery<{
     points: PointsUseQueryProps[];
     disabledDays: Date[] | [];
@@ -45,7 +69,7 @@ export function PointProvider({ children }: { children: ReactNode }) {
       totalMinutes: number;
     };
   }>({
-    queryKey: ["pointsByMonth", filterMonth, filterYear],
+    queryKey: ["pointsByMonth", filterMonth, filterYear, infoPointData],
     queryFn: async () => {
       const { data } = await axios.get("/api/point/getByMonth", {
         params: {
@@ -56,31 +80,31 @@ export function PointProvider({ children }: { children: ReactNode }) {
 
       return data;
     },
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false,
+    enabled: !!infoPointData,
   });
 
-  const { data: dataMonths } = useQuery({
-    queryKey: ["pointsByYear", filterYear],
-    queryFn: async () => {
-      const { data } = await axios.get("/api/point/getByYear", {
-        params: {
-          // month: 0,
-          year: filterYear,
-        },
-      });
+  // const { data: dataMonths } = useQuery({
+  //   queryKey: ["pointsByYear", filterYear],
+  //   queryFn: async () => {
+  //     const { data } = await axios.get("/api/point/getByYear", {
+  //       params: {
+  //         year: filterYear,
+  //       },
+  //     });
 
-      console.log("getByYear------", data);
-
-      return data;
-    },
-    refetchOnWindowFocus: true,
-  });
-
-  console.log("filter date", filterMonth, filterYear);
-  console.log("data", data);
+  //     return data;
+  //   },
+  //   refetchOnWindowFocus: false,
+  //   enabled: false,
+  // });
 
   function onRefechPoints() {
     refetch();
+  }
+
+  function onRefetchInfoPoint() {
+    refetchInfoPoint();
   }
 
   function onChangeFilterDate(date: Date) {
@@ -103,6 +127,9 @@ export function PointProvider({ children }: { children: ReactNode }) {
         onChangeMonth,
         onChangeFilterDate,
         onRefechPoints,
+        onRefetchInfoPoint,
+        infoPointData,
+        isLoadingInfoPoint,
         bonusByMonth: data?.bonusByMonth.totalMinutes,
         filterMonth,
         filterYear,

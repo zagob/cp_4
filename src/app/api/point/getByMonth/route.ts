@@ -11,21 +11,13 @@ export async function GET(req: Request) {
       return new Response("Unauthorized", { status: 401 });
     }
 
-    const query = db.collection("infoPoints").doc(session.user.id);
+    const totalMinutes: number | undefined = (
+      await db.collection("users").doc(session.user.id).get()
+    ).data()?.infoPoint.totalMinutes;
 
-    const infoPoint = (await query.get()).data();
-
-    // const infoPoint = await db.infoPoint.findUnique({
-    //   where: {
-    //     userId: session.user.id,
-    //   },
-    // });
-
-    if (!infoPoint) {
+    if (!totalMinutes) {
       return new Response("Not found info points", { status: 404 });
     }
-
-    const totalMinutes = infoPoint?.totalMinutes;
 
     const url = new URL(req.url);
 
@@ -35,72 +27,32 @@ export async function GET(req: Request) {
     const firstDayOfMonth = format(new Date(year, month - 1, 1), "yyyy-MM-dd");
     const lastDayOfMonth = format(new Date(year, month, 0), "yyyy-MM-dd");
 
-    console.log("firstDayOfMonth", firstDayOfMonth);
-    console.log("lastDayOfMonth", lastDayOfMonth);
-
     const points = db
       .collection("users")
       .doc(session.user.id)
       .collection("points")
       .where("createdAt", ">=", firstDayOfMonth)
       .where("createdAt", "<=", lastDayOfMonth)
-      .orderBy("asc");
+      .orderBy("createdAt", "asc");
 
-    const pointsStatus = db
-      .collection("users")
-      .doc(session.user.id)
-      .collection("points")
-      .where("holiday", "==", false)
-      .where("createdAt", ">=", firstDayOfMonth)
-      .where("createdAt", "<=", lastDayOfMonth)
-      .orderBy("asc");
+    const pointsData = (await points.get()).docs.map((point) => {
+      const { time1, time2, time3, time4, createdAt, holiday } = point.data();
 
-    const pointsData = (await points.get()).docs.map((point) => point.data());
-    const pointsStatusData = (await pointsStatus.get()).docs.map((point) =>
-      point.data()
-    );
+      return {
+        id: point.id,
+        time1,
+        time2,
+        time3,
+        time4,
+        createdAt,
+        holiday,
+      };
+    });
+    const pointsStatus = pointsData.filter((point) => !point.holiday);
 
-    // return new Response(
-    //   JSON.stringify({
-    //     points: [],
-    //     disabledDays: [],
-    //     testePoints: [],
-    //     bonusByMonth: [],
-    //   })
-    // );
-
-    // const points = await db.point.findMany({
-    //   where: {
-    //     userId: session.user.id,
-    //     createdAt: {
-    //       gte: firstDayOfMonth,
-    //       lte: lastDayOfMonth,
-    //     },
-    //   },
-    //   orderBy: {
-    //     createdAt: "asc",
-    //   },
-    // });
-
-    // const pointsStatus = await db.point.findMany({
-    //   where: {
-    //     userId: session.user.id,
-    //     createdAt: {
-    //       gte: firstDayOfMonth,
-    //       lte: lastDayOfMonth,
-    //     },
-    //     holiday: false,
-    //   },
-    //   orderBy: {
-    //     createdAt: "asc",
-    //   },
-    // });
-
-    const disabledDays = pointsData.map((point) => new Date(point.createdAt));
-
-    const formatPoints = transformPoints(pointsData, totalMinutes);
-    const formatPointsStatus = transformPoints(
-      pointsStatusData,
+    const formatPointsData = transformPoints(pointsData, totalMinutes);
+    const formatPointsStatusData = transformPoints(
+      pointsStatus,
       totalMinutes
     ).reduce(
       (acc, value) => {
@@ -116,12 +68,15 @@ export async function GET(req: Request) {
       }
     );
 
+    const disabledDays = formatPointsData.map(
+      (point) => new Date(point.createdAt)
+    );
+
     return new Response(
       JSON.stringify({
-        points: formatPoints,
+        points: formatPointsData,
         disabledDays,
-        testePoints: points,
-        bonusByMonth: formatPointsStatus,
+        bonusByMonth: formatPointsStatusData,
       })
     );
   } catch (error) {}

@@ -19,7 +19,7 @@ export function Filter() {
       };
     });
   }, [filterMonth, filterYear]);
-  console.log("monthsmonths", months);
+
   return (
     <>
       <div className="flex items-center gap-2 w-[300px]  p-2">

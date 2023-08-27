@@ -12,18 +12,7 @@ import { UserCreationRequest } from "@/lib/validators/user";
 import { FiPower } from "react-icons/fi";
 import { Button } from "./ui/Button";
 import { signOut } from "next-auth/react";
-
-function GetInfoPoint() {
-  return useQuery({
-    queryKey: ["infoPoint"],
-    queryFn: async () => {
-      const { data } = await axios.get("/api/infoPoint/get");
-
-      return data;
-    },
-    refetchOnWindowFocus: true,
-  });
-}
+import { usePointProvider } from "@/contexts/PointProvider";
 
 interface GetInfoPointProps {
   data: {
@@ -37,9 +26,7 @@ interface DashboardProps {
 }
 
 export function Dashboard({ user }: DashboardProps) {
-  const { data, isLoading } = GetInfoPoint() as GetInfoPointProps;
-
-  console.log("data", data);
+  const { infoPointData, isLoadingInfoPoint } = usePointProvider();
 
   return (
     <div className="border border-zinc-700 min-h-screen p-2 flex flex-col gap-2">
@@ -62,15 +49,15 @@ export function Dashboard({ user }: DashboardProps) {
         </div>
       </Card>
       <div className="flex flex-1 gap-2">
-        {isLoading ? (
+        {isLoadingInfoPoint ? (
           <div className="w-[340px] bg-zinc-800 rounded shadow-md p-2 pt-10 flex flex-col items-center justify-center gap-6">
             <LiaSpinnerSolid size={36} className="animate-spin text-zinc-300" />
           </div>
         ) : (
-          <>{data?.infoPoint ? <AddPoint /> : <AddInfoPoint />}</>
+          <>{infoPointData ? <AddPoint /> : <AddInfoPoint />}</>
         )}
 
-        {/* <DataTable infoPoint={!data?.infoPoint} /> */}
+        <DataTable infoPoint={!infoPointData} />
       </div>
 
       {/* <Graphic infoPoint={!data?.infoPoint} /> */}

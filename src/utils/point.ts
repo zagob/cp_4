@@ -1,6 +1,6 @@
 import { minutesToTime } from "./time";
 
-interface PointProps {
+export interface PointProps {
   id: string;
   time1: number;
   time2: number;
@@ -11,7 +11,8 @@ interface PointProps {
 }
 
 export function transformPoints(
-  points: PointProps[] | [],
+  // points: PointProps[] | [],
+  points: FirebaseFirestore.DocumentData[],
   totalWorkMinutes: number
 ) {
   return points.map(

@@ -22,10 +22,6 @@ export const authOptionsFirebase: NextAuthOptions = {
 
   callbacks: {
     async session({ token, session, user, newSession }) {
-      // console.log("sess", session);
-      // console.log("token", token);
-      // console.log("user", user);
-      // console.log("newSession", newSession);
       // if (token) {
       //   session.user.id = token.id;
       //   session.user.name = token.name;

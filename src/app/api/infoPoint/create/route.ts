@@ -25,20 +25,9 @@ export async function POST(req: Request) {
       return new Response("totalMinutes not equal at times", { status: 400 });
     }
 
-    db.collection("infoPoints").doc(session.user.id).create({
-      test: "test",
+    db.collection("users").doc(session.user.id).update({
+      infoPoint: data,
     });
-
-    // await db.user.update({
-    //   where: {
-    //     id: session.user.id,
-    //   },
-    //   data: {
-    //     infoPoint: {
-    //       create: data,
-    //     },
-    //   },
-    // });
 
     return new Response("infoPoint Created Success", { status: 200 });
   } catch (error) {
