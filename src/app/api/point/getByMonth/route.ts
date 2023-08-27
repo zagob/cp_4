@@ -79,5 +79,7 @@ export async function GET(req: Request) {
         bonusByMonth: formatPointsStatusData,
       })
     );
-  } catch (error) {}
+  } catch (error) {
+    return new Response("Internal server error", { status: 500 });
+  }
 }

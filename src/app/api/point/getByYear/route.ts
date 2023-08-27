@@ -60,5 +60,7 @@ export async function GET(req: Request) {
         }),
       })
     );
-  } catch (error) {}
+  } catch (error) {
+    return new Response("Internal server error", { status: 500 });
+  }
 }

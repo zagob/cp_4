@@ -16,5 +16,7 @@ export async function GET(req: Request) {
     ).data()?.infoPoint?.totalMinutes;
 
     return new Response(JSON.stringify({ totalMinutes }));
-  } catch (error) {}
+  } catch (error) {
+    return new Response("Internal server error", { status: 500 });
+  }
 }
