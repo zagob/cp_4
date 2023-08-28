@@ -3,16 +3,18 @@ import { format } from "date-fns";
 import { usePointProvider } from "@/contexts/PointProvider";
 import clsx from "clsx";
 import { ModalConfirmDeletePoint } from "./ModalConfirmDeletePoint";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { Card } from "./ui/Card";
+import { AiFillClockCircle, AiOutlineLoading } from "react-icons/ai";
 
 interface DataTableProps {
   infoPoint: boolean;
 }
 
 export function DataTable({ infoPoint }: DataTableProps) {
-  const { points } = usePointProvider();
+  const { points, isLoadingPoints } = usePointProvider();
 
-  if (points.length === 0) {
+  if (points.length === 0 && !isLoadingPoints) {
     return (
       <Card
         disabled={infoPoint}
@@ -20,6 +22,14 @@ export function DataTable({ infoPoint }: DataTableProps) {
       >
         <h1 className="text-2xl text-zinc-500">Nenhum ponto cadastrado</h1>
       </Card>
+    );
+  }
+
+  if (isLoadingPoints) {
+    return (
+      <div className="flex-1 bg-zinc-800 rounded shadow-md px-4 pt-4 flex items-center justify-center gap-2">
+        <AiOutlineLoading size={50} className="animate-spin" />
+      </div>
     );
   }
 

@@ -9,7 +9,11 @@ export default function Home() {
   const session = useSession();
 
   if (session.status === "loading") {
-    return <h1>Loading...</h1>;
+    return (
+      <div className="grid items-center justify-center min-h-screen">
+        <h1 className="font-medium text-2xl animate-pulse">Carregando...</h1>
+      </div>
+    );
   }
 
   if (!session) {

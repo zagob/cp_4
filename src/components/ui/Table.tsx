@@ -7,6 +7,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import clsx from "clsx";
 
 interface TableProps<TData, TValue> {
@@ -20,6 +21,7 @@ export function Table<TData, TValue>({
   columns,
   classValue,
 }: TableProps<TData, TValue>) {
+  const [parent] = useAutoAnimate({});
   const table = useReactTable({
     data,
     columns,
@@ -27,7 +29,7 @@ export function Table<TData, TValue>({
   });
 
   return (
-    <div className="p-2 w-full">
+    <div ref={parent} className="p-2 w-full">
       <table className="border w-full">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (

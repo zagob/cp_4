@@ -34,6 +34,7 @@ interface PointContextProps {
   onRefetchInfoPoint: () => void;
   infoPointData: InfoPointProps | null;
   isLoadingInfoPoint: boolean;
+  isLoadingPoints: boolean;
 }
 
 export const PointContext = createContext({} as PointContextProps);
@@ -62,7 +63,11 @@ export function PointProvider({ children }: { children: ReactNode }) {
     refetchOnWindowFocus: false,
   });
 
-  const { data, refetch } = useQuery<{
+  const {
+    data,
+    refetch,
+    isLoading: isLoadingPoints,
+  } = useQuery<{
     points: PointsUseQueryProps[];
     disabledDays: Date[] | [];
     bonusByMonth: {
@@ -130,6 +135,7 @@ export function PointProvider({ children }: { children: ReactNode }) {
         onRefetchInfoPoint,
         infoPointData,
         isLoadingInfoPoint,
+        isLoadingPoints,
         bonusByMonth: data?.bonusByMonth.totalMinutes,
         filterMonth,
         filterYear,
